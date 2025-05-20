@@ -86,21 +86,87 @@ document.addEventListener("DOMContentLoaded", () => {
       const productCard = document.createElement("div")
       productCard.className = "product-card bg-white shadow rounded-lg overflow-hidden"
 
-      const imageUrl = product.image || "https://via.placeholder.com/300x200?text=Product+Image"
+      // Create a placeholder with product name
+      const placeholderUrl = `https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}`
 
-      productCard.innerHTML = `
-        <img src="${imageUrl}" alt="${product.name}" class="product-image w-full">
-        <div class="p-4">
-          <h3 class="text-lg font-bold text-gray-800">${product.name}</h3>
-          <p class="text-gray-600 mb-2">${product.price}</p>
-          <p class="text-sm text-gray-500">${product.description || "No description available."}</p>
-          <button class="mt-4 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors add-to-order" 
-                  data-product="${product.name}" data-price="${product.price}">
-            Add to Order
-          </button>
-        </div>
+      // Get image URL from product data
+      let imageUrl = placeholderUrl
+      if (product.image && product.image.trim() !== "") {
+        // Clean up the URL if needed (remove quotes, trim whitespace)
+        imageUrl = product.image.trim().replace(/^"|"$/g, "")
+
+        // Check if it's an Imgur URL
+        const isImgur = imageUrl.includes("imgur.com")
+
+        // If the URL doesn't start with http/https, assume it's a relative URL
+        if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+          imageUrl = "https://" + imageUrl
+        }
+
+        // Add warning for Imgur URLs
+        if (isImgur) {
+          console.log(`Imgur image detected for ${product.name}. Imgur may have capacity issues.`)
+        }
+      }
+
+      // Create image container with loading state
+      const imageContainer = document.createElement("div")
+      imageContainer.className = "relative"
+
+      // Create image element
+      const img = document.createElement("img")
+      img.src = imageUrl
+      img.alt = product.name
+      img.className = "product-image w-full"
+
+      // Add loading indicator
+      const loadingIndicator = document.createElement("div")
+      loadingIndicator.className = "absolute inset-0 flex items-center justify-center bg-gray-100"
+      loadingIndicator.innerHTML = '<p class="text-gray-500">Loading image...</p>'
+
+      // Add error handling
+      img.onerror = function () {
+        this.onerror = null
+        this.src = placeholderUrl
+
+        // Create error message overlay
+        const errorOverlay = document.createElement("div")
+        errorOverlay.className =
+          "absolute bottom-0 left-0 right-0 bg-red-500 bg-opacity-80 text-white text-xs p-1 text-center"
+        errorOverlay.textContent = "Image unavailable"
+
+        // Replace loading indicator with error overlay
+        this.parentNode.removeChild(loadingIndicator)
+        this.parentNode.appendChild(errorOverlay)
+      }
+
+      // Remove loading indicator when image loads
+      img.onload = function () {
+        if (this.parentNode && this.parentNode.contains(loadingIndicator)) {
+          this.parentNode.removeChild(loadingIndicator)
+        }
+      }
+
+      // Add elements to image container
+      imageContainer.appendChild(img)
+      imageContainer.appendChild(loadingIndicator)
+
+      // Create product info container
+      const infoContainer = document.createElement("div")
+      infoContainer.className = "p-4"
+      infoContainer.innerHTML = `
+        <h3 class="text-lg font-bold text-gray-800">${product.name}</h3>
+        <p class="text-gray-600 mb-2">${product.price}</p>
+        <p class="text-sm text-gray-500">${product.description || "No description available."}</p>
+        <button class="mt-4 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors add-to-order" 
+                data-product="${product.name}" data-price="${product.price}">
+          Add to Order
+        </button>
       `
 
+      // Add containers to product card
+      productCard.appendChild(imageContainer)
+      productCard.appendChild(infoContainer)
       productsGrid.appendChild(productCard)
 
       // Add event listener to the "Add to Order" button
