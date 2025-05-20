@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Replace with your published Google Sheet ID and sheet name
-  const sheetId = "YOUR_GOOGLE_SHEET_ID"
-  const sheetName = "Products"
+  const sheetId = "1UTrtRDOQLCZ985NClMTFFtOg1EUngAZ2DdijHK1TLtU"
+  const sheetName = "rabida"
 
   // URL for the published Google Sheet in CSV format
   const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`
